@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## `postgresql_extensions` - [0.20.5](https://github.com/theseus-rs/postgresql-embedded/compare/postgresql_extensions-v0.20.4...postgresql_extensions-v0.20.5) - 2026-07-03
+
+### Other
+- remove dependency thiserror
+
+## `postgresql_embedded` - [0.20.5](https://github.com/theseus-rs/postgresql-embedded/compare/v0.20.4...v0.20.5) - 2026-07-03
+
+### Other
+- remove dependency thiserror
+
+## `postgresql_commands` - [0.20.5](https://github.com/theseus-rs/postgresql-embedded/compare/postgresql_commands-v0.20.4...postgresql_commands-v0.20.5) - 2026-07-03
+
+### Other
+- remove dependency thiserror
+
+## `postgresql_archive` - [0.20.5](https://github.com/theseus-rs/postgresql-embedded/compare/postgresql_archive-v0.20.4...postgresql_archive-v0.20.5) - 2026-07-03
+
+### Other
+- remove dependency thiserror
+
 ## `postgresql_embedded` - [0.20.4](https://github.com/theseus-rs/postgresql-embedded/compare/v0.20.3...v0.20.4) - 2026-06-10
 
 ### Fixed
