@@ -19,6 +19,39 @@ use url::Url;
 pub(crate) async fn stage_postgresql_archive() -> Result<()> {
     println!("cargo:rerun-if-env-changed=POSTGRESQL_VERSION");
     println!("cargo:rerun-if-env-changed=POSTGRESQL_RELEASES_URL");
+
+    let env_or = |name: &str| env::var(name).unwrap_or_else(|_| "<unset>".to_string());
+    let resolved_target = env::var("TARGET").unwrap_or_else(|_| target_triple::TARGET.to_string());
+    let resolved_target_source = if env::var("TARGET").is_ok() {
+        "TARGET env var"
+    } else {
+        "target_triple::TARGET constant (fallback)"
+    };
+    println!("===== bundled archive target resolution =====");
+    println!("resolved target ...............: {resolved_target}");
+    println!("resolved target source ........: {resolved_target_source}");
+    println!("env TARGET ....................: {}", env_or("TARGET"));
+    println!("env HOST ......................: {}", env_or("HOST"));
+    println!("const target_triple::TARGET ...: {}", target_triple::TARGET);
+    println!("const target_triple::HOST .....: {}", target_triple::HOST);
+    println!(
+        "CARGO_CFG_TARGET_ARCH .........: {}",
+        env_or("CARGO_CFG_TARGET_ARCH")
+    );
+    println!(
+        "CARGO_CFG_TARGET_OS ...........: {}",
+        env_or("CARGO_CFG_TARGET_OS")
+    );
+    println!(
+        "CARGO_CFG_TARGET_ENV ..........: {}",
+        env_or("CARGO_CFG_TARGET_ENV")
+    );
+    println!(
+        "CARGO_CFG_TARGET_VENDOR .......: {}",
+        env_or("CARGO_CFG_TARGET_VENDOR")
+    );
+    println!("=============================================");
+
     #[cfg(feature = "theseus")]
     let default_releases_url = postgresql_archive::configuration::theseus::URL.to_string();
     #[cfg(not(feature = "theseus"))]
