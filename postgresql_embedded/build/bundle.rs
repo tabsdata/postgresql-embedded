@@ -21,36 +21,48 @@ pub(crate) async fn stage_postgresql_archive() -> Result<()> {
     println!("cargo:rerun-if-env-changed=POSTGRESQL_RELEASES_URL");
 
     let env_or = |name: &str| env::var(name).unwrap_or_else(|_| "<unset>".to_string());
-    let resolved_target = env::var("TARGET").unwrap_or_else(|_| target_triple::TARGET.to_string());
-    let resolved_target_source = if env::var("TARGET").is_ok() {
-        "TARGET env var"
+    let resolved_target = env::var("HOST").unwrap_or_else(|_| target_triple::TARGET.to_string());
+    let resolved_target_source = if env::var("HOST").is_ok() {
+        "HOST env var"
     } else {
         "target_triple::TARGET constant (fallback)"
     };
-    println!("===== bundled archive target resolution =====");
-    println!("resolved target ...............: {resolved_target}");
-    println!("resolved target source ........: {resolved_target_source}");
-    println!("env TARGET ....................: {}", env_or("TARGET"));
-    println!("env HOST ......................: {}", env_or("HOST"));
-    println!("const target_triple::TARGET ...: {}", target_triple::TARGET);
-    println!("const target_triple::HOST .....: {}", target_triple::HOST);
+    println!("cargo::warning====== bundled archive target resolution =====");
+    println!("cargo::warning=resolved target ...............: {resolved_target}");
+    println!("cargo::warning=resolved target source ........: {resolved_target_source}");
     println!(
-        "CARGO_CFG_TARGET_ARCH .........: {}",
+        "cargo::warning=env TARGET ....................: {}",
+        env_or("TARGET")
+    );
+    println!(
+        "cargo::warning=env HOST ......................: {}",
+        env_or("HOST")
+    );
+    println!(
+        "cargo::warning=const target_triple::TARGET ...: {}",
+        target_triple::TARGET
+    );
+    println!(
+        "cargo::warning=const target_triple::HOST .....: {}",
+        target_triple::HOST
+    );
+    println!(
+        "cargo::warning=CARGO_CFG_TARGET_ARCH .........: {}",
         env_or("CARGO_CFG_TARGET_ARCH")
     );
     println!(
-        "CARGO_CFG_TARGET_OS ...........: {}",
+        "cargo::warning=CARGO_CFG_TARGET_OS ...........: {}",
         env_or("CARGO_CFG_TARGET_OS")
     );
     println!(
-        "CARGO_CFG_TARGET_ENV ..........: {}",
+        "cargo::warning=CARGO_CFG_TARGET_ENV ..........: {}",
         env_or("CARGO_CFG_TARGET_ENV")
     );
     println!(
-        "CARGO_CFG_TARGET_VENDOR .......: {}",
+        "cargo::warning=CARGO_CFG_TARGET_VENDOR .......: {}",
         env_or("CARGO_CFG_TARGET_VENDOR")
     );
-    println!("=============================================");
+    println!("cargo::warning==============================================");
 
     #[cfg(feature = "theseus")]
     let default_releases_url = postgresql_archive::configuration::theseus::URL.to_string();
@@ -73,7 +85,7 @@ pub(crate) async fn stage_postgresql_archive() -> Result<()> {
     println!("PostgreSQL version: {postgres_version_req}");
     println!(
         "Target: {}",
-        env::var("TARGET").unwrap_or_else(|_| target_triple::TARGET.to_string())
+        env::var("HOST").unwrap_or_else(|_| target_triple::TARGET.to_string())
     );
 
     let out_dir = PathBuf::from(env::var("OUT_DIR")?);
@@ -87,10 +99,9 @@ pub(crate) async fn stage_postgresql_archive() -> Result<()> {
     if archive_version_file.exists() && archive_file.exists() {
         println!("PostgreSQL archive exists: {archive_file:?}");
         let bundled_version = fs::read_to_string(&archive_version_file)?;
-        let bundled_target =
-            env::var("TARGET").unwrap_or_else(|_| target_triple::TARGET.to_string());
+        let bundled_target = env::var("HOST").unwrap_or_else(|_| target_triple::TARGET.to_string());
         println!(
-            "Bundling PostgreSQL binary: postgresql-{}-{bundled_target}.tar.gz (already staged)",
+            "cargo::warning=Bundling PostgreSQL binary: postgresql-{}-{bundled_target}.tar.gz (already staged)",
             bundled_version.trim()
         );
         return Ok(());
@@ -124,9 +135,9 @@ pub(crate) async fn stage_postgresql_archive() -> Result<()> {
     file.sync_data()?;
     println!("PostgreSQL archive written to: {archive_file:?}");
 
-    let bundled_target = env::var("TARGET").unwrap_or_else(|_| target_triple::TARGET.to_string());
+    let bundled_target = env::var("HOST").unwrap_or_else(|_| target_triple::TARGET.to_string());
     println!(
-        "Bundling PostgreSQL binary: postgresql-{asset_version}-{bundled_target}.tar.gz ({} bytes)",
+        "cargo::warning=Bundling PostgreSQL binary: postgresql-{asset_version}-{bundled_target}.tar.gz ({} bytes)",
         archive.len()
     );
 
@@ -136,7 +147,7 @@ pub(crate) async fn stage_postgresql_archive() -> Result<()> {
 /// Returns the path for a cached archive.
 fn cached_archive_path(version: &Version) -> PathBuf {
     let home = std::env::home_dir().unwrap_or_else(|| env::current_dir().unwrap_or_default());
-    let target = env::var("TARGET").unwrap_or_else(|_| target_triple::TARGET.to_string());
+    let target = env::var("HOST").unwrap_or_else(|_| target_triple::TARGET.to_string());
     home.join(".theseus")
         .join("postgresql")
         .join(format!("postgresql-{version}-{target}.tar.gz"))

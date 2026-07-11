@@ -5,7 +5,7 @@ use semver::Version;
 /// # Errors
 /// * If the asset matcher fails.
 pub fn matcher(_url: &str, name: &str, version: &Version) -> crate::Result<bool> {
-    let target = std::env::var("TARGET").unwrap_or_else(|_| target_triple::TARGET.to_string());
+    let target = std::env::var("HOST").unwrap_or_else(|_| target_triple::TARGET.to_string());
     let expected_name = format!("postgresql-{version}-{target}.tar.gz");
     Ok(name == expected_name)
 }
