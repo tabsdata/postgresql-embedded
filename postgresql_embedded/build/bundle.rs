@@ -38,7 +38,10 @@ pub(crate) async fn stage_postgresql_archive() -> Result<()> {
     let postgres_version_req = env::var("POSTGRESQL_VERSION").unwrap_or("*".to_string());
     let version_req = VersionReq::from_str(postgres_version_req.as_str())?;
     println!("PostgreSQL version: {postgres_version_req}");
-    println!("Target: {}", target_triple::TARGET);
+    println!(
+        "Target: {}",
+        env::var("TARGET").unwrap_or_else(|_| target_triple::TARGET.to_string())
+    );
 
     let out_dir = PathBuf::from(env::var("OUT_DIR")?);
     println!("OUT_DIR: {out_dir:?}");
@@ -50,6 +53,13 @@ pub(crate) async fn stage_postgresql_archive() -> Result<()> {
 
     if archive_version_file.exists() && archive_file.exists() {
         println!("PostgreSQL archive exists: {archive_file:?}");
+        let bundled_version = fs::read_to_string(&archive_version_file)?;
+        let bundled_target =
+            env::var("TARGET").unwrap_or_else(|_| target_triple::TARGET.to_string());
+        println!(
+            "Bundling PostgreSQL binary: postgresql-{}-{bundled_target}.tar.gz (already staged)",
+            bundled_version.trim()
+        );
         return Ok(());
     }
 
@@ -81,13 +91,19 @@ pub(crate) async fn stage_postgresql_archive() -> Result<()> {
     file.sync_data()?;
     println!("PostgreSQL archive written to: {archive_file:?}");
 
+    let bundled_target = env::var("TARGET").unwrap_or_else(|_| target_triple::TARGET.to_string());
+    println!(
+        "Bundling PostgreSQL binary: postgresql-{asset_version}-{bundled_target}.tar.gz ({} bytes)",
+        archive.len()
+    );
+
     Ok(())
 }
 
 /// Returns the path for a cached archive.
 fn cached_archive_path(version: &Version) -> PathBuf {
     let home = std::env::home_dir().unwrap_or_else(|| env::current_dir().unwrap_or_default());
-    let target = target_triple::TARGET;
+    let target = env::var("TARGET").unwrap_or_else(|_| target_triple::TARGET.to_string());
     home.join(".theseus")
         .join("postgresql")
         .join(format!("postgresql-{version}-{target}.tar.gz"))
